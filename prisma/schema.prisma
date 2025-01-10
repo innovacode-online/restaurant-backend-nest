@@ -13,17 +13,86 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model Category {
-
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
-  slug String
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String
   description String
+
+  // Declaracion de la relacion inversa
+  products Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("categories")
+}
+
+model Product {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name        String
+  slug        String  @unique
+  description String
+  stock       Int     @default(10)
+  price       Float
+  enable      Boolean @default(true)
+  image       String
+
+  // Establezca la relacion y sus llaves
+  category   Category @relation(fields: [categoryId], references: [id])
+  // Valor de la relacion
+  categoryId String   @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("products")
+}
+
+model Order {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  total      Float
+  orderItems OrderItems[]
+  clientName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
+
+  @@map("orders")
+
+}
+
+type OrderItems {
+  productId    String @db.ObjectId
+  productNane  String
+  productPrice Float
+  quantity     Int
+  subTotal     Float
+}
+
+model User {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String @unique
+  password String
+
+  Order Order[]
+
+  roles Roles
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+
+enum Roles {
+  ADMIN
+  POS
 }

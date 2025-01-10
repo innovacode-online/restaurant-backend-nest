@@ -20,6 +20,9 @@ export class CategoriesService {
   }
 
   findAll() {
+
+    
+
     return {
       categories: this.categories,
     };
