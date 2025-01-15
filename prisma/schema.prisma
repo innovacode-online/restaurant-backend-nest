@@ -16,7 +16,7 @@ datasource db {
 model Category {
   id          String @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  slug        String
+  slug        String @unique
   description String
 
   // Declaracion de la relacion inversa

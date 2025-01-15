@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,7 +9,7 @@ export class CategoriesService {
 
   constructor(
     private readonly prisma: PrismaService
-  ){}
+  ) { }
 
 
   async create(createCategoryDto: CreateCategoryDto) {
@@ -21,7 +21,7 @@ export class CategoriesService {
       }
     })
 
-    if( categoryExists ){
+    if (categoryExists) {
       throw new BadRequestException("La categoria ya existe")
     }
 
@@ -52,32 +52,59 @@ export class CategoriesService {
   }
 
   async findOne(term: string) {
-
-    const category = await this.prisma.category.findFirst({
-      where: {
-        id: term,
-      },
-      include: {
-        products: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            image: true,
-            price: true
+    try {
+      const category = await this.prisma.category.findFirst({
+        where: { id: term },
+        include: {
+          products: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              image: true,
+              price: true
+            }
           }
         }
+      })
+
+      if (!category) {
+        throw new NotFoundException("No se encontro la categoria")
       }
-    })
 
-    if( !category ){
-      throw new NotFoundException("No se encontro la categoria")
+      return {
+        category,
+      }
+
+    } catch (error) {
+      console.log(error)
+
+      if (error.code == "P2023") {
+        const category = await this.prisma.category.findFirst({
+          where: { slug: term },
+
+          include: {
+            products: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                image: true,
+                price: true
+              }
+            }
+          }
+        })
+
+        return { category }
+      }
+
+      if( error.status === 404 ){
+        throw new NotFoundException(error.response.message);
+      }
+
+      throw new InternalServerErrorException("Revise los logs del sistema")
     }
-
-    return {
-      category,
-    }
-
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
