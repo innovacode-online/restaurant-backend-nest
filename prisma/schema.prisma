@@ -69,7 +69,7 @@ model Order {
 
 type OrderItems {
   productId    String @db.ObjectId
-  productNane  String
+  productName  String
   productPrice Float
   quantity     Int
   subTotal     Float
