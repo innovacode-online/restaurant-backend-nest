@@ -77,6 +77,40 @@ export class ProductsService {
     };
   }
 
+  async findByCategory(slug: string){
+
+    const products = await this.prisma.product.findMany({
+      where: {
+        category: {
+          slug
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      include: {
+        category: {
+          select: {
+            name: true,
+            slug: true,
+          }
+        }
+      }
+    })
+
+    if( products.length === 0 ){
+      return {
+        products: []
+      }
+    } 
+  
+    return {
+      products
+    }
+
+  }
+
+
   async findOne(slug: string) {
 
     const product = await this.prisma.product.findFirst({

@@ -18,6 +18,11 @@ export class ProductsController {
     return this.productsService.findAll(paginationDto);
   }
 
+  @Get('/category/:slug')
+  findByCategory( @Param('slug') slug: string ) {
+    return this.productsService.findByCategory(slug);
+  }
+
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.productsService.findOne(slug);
